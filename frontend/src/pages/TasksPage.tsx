@@ -4,13 +4,30 @@ import { fetchTasks, addTask, editTask, removeTask } from '../store/slices/tasks
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
-import { BiTrash, BiCheckCircle, BiCircle } from 'react-icons/bi';
+import { BiTrash, BiCheckCircle, BiCircle, BiEdit } from 'react-icons/bi';
 
 const TasksPage = () => {
   const dispatch = useAppDispatch();
   const { items: tasks, isLoading } = useAppSelector((state) => state.tasks);
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high'>('medium');
+
+  const startEdit = (task: any) => {
+    setEditingId(task.id);
+    setEditTitle(task.title);
+    setEditPriority(task.priority);
+  };
+
+  const saveEdit = () => {
+    if (editingId && editTitle.trim()) {
+      dispatch(editTask({ id: editingId, updates: { title: editTitle, priority: editPriority } }));
+      setEditingId(null);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchTasks());
@@ -89,49 +106,89 @@ const TasksPage = () => {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                className={`flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border transition-all ${
                   task.status === 'completed'
-                    ? 'bg-slate-50/50 border-slate-200 opacity-70'
-                    : 'bg-white/60 border-white/80 shadow-sm hover:shadow-md'
+                    ? 'bg-white/30 backdrop-blur-sm border-white/40 opacity-70'
+                    : 'glass-card hover:shadow-md'
                 }`}
               >
-                <button
-                  onClick={() => toggleStatus(task.id, task.status)}
-                  className="text-indigo-600 hover:text-indigo-800 flex-shrink-0"
-                >
-                  {task.status === 'completed' ? (
-                    <BiCheckCircle className="h-6 w-6" />
-                  ) : (
-                    <BiCircle className="h-6 w-6" />
-                  )}
-                </button>
+                {editingId === task.id ? (
+                  <div className="flex-1 flex flex-col sm:flex-row gap-3 w-full">
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="flex-1"
+                    />
+                    <select
+                      value={editPriority}
+                      onChange={(e) => setEditPriority(e.target.value as any)}
+                      className="glass-input w-full sm:w-32 h-10 px-2"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button onClick={saveEdit} className="h-10 px-4">
+                        Save
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingId(null)} className="h-10 px-4">
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => toggleStatus(task.id, task.status)}
+                      className="text-indigo-600 hover:text-indigo-800 flex-shrink-0"
+                    >
+                      {task.status === 'completed' ? (
+                        <BiCheckCircle className="h-6 w-6" />
+                      ) : (
+                        <BiCircle className="h-6 w-6" />
+                      )}
+                    </button>
 
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-medium truncate ${task.status === 'completed' ? 'line-through text-slate-500' : 'text-slate-800'}`}
-                  >
-                    {task.title}
-                  </p>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${
-                      task.priority === 'high'
-                        ? 'bg-rose-100 text-rose-700'
-                        : task.priority === 'medium'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-green-100 text-green-700'
-                    }`}
-                  >
-                    {task.priority}
-                  </span>
-                </div>
+                    <div className="flex-1 min-w-0 w-full">
+                      <p
+                        className={`font-medium truncate ${
+                          task.status === 'completed' ? 'line-through text-slate-500' : 'text-slate-800'
+                        }`}
+                      >
+                        {task.title}
+                      </p>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${
+                          task.priority === 'high'
+                            ? 'bg-rose-100 text-rose-700'
+                            : task.priority === 'medium'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-green-100 text-green-700'
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
 
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex-shrink-0"
-                  title="Delete task"
-                >
-                  <BiTrash className="h-5 w-5" />
-                </button>
+                    <div className="flex gap-1 flex-shrink-0 self-end sm:self-center">
+                      <button
+                        onClick={() => startEdit(task)}
+                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-colors"
+                        title="Edit task"
+                      >
+                        <BiEdit className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50/50 rounded-lg transition-colors"
+                        title="Delete task"
+                      >
+                        <BiTrash className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

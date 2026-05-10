@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks';
-import { fetchExpenses, addExpense, removeExpense } from '../store/slices/expensesSlice';
+import { fetchExpenses, addExpense, removeExpense, editExpense } from '../store/slices/expensesSlice';
 
 import { formatCurrency, formatDate } from '../utils/formatters';
-import { BiTrash, BiWallet } from 'react-icons/bi';
+import { BiTrash, BiWallet, BiEdit } from 'react-icons/bi';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -16,6 +16,34 @@ const ExpensesPage = () => {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('other');
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+  const [editCategory, setEditCategory] = useState<ExpenseCategory>('other');
+
+  const startEdit = (expense: any) => {
+    setEditingId(expense.id);
+    setEditTitle(expense.title);
+    setEditAmount(expense.amount.toString());
+    setEditCategory(expense.category);
+  };
+
+  const saveEdit = () => {
+    if (editingId && editTitle.trim() && editAmount) {
+      dispatch(
+        editExpense({
+          id: editingId,
+          updates: {
+            title: editTitle,
+            amount: parseFloat(editAmount),
+            category: editCategory,
+          },
+        })
+      );
+      setEditingId(null);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchExpenses());
@@ -121,26 +149,77 @@ const ExpensesPage = () => {
                   <th className="pb-3 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/20">
                 {expenses.map((exp) => (
-                  <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-4 pl-2 text-sm text-slate-600 whitespace-nowrap">{formatDate(exp.date)}</td>
-                    <td className="py-4 font-medium text-slate-800">{exp.title}</td>
-                    <td className="py-4">
-                      <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600 capitalize">
-                        {exp.category}
-                      </span>
-                    </td>
-                    <td className="py-4 text-right font-bold text-slate-700">{formatCurrency(exp.amount)}</td>
-                    <td className="py-4 text-center">
-                      <button
-                        onClick={() => handleDelete(exp.id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors inline-block"
-                        title="Delete expense"
-                      >
-                        <BiTrash className="h-5 w-5" />
-                      </button>
-                    </td>
+                  <tr key={exp.id} className="hover:bg-white/40 transition-colors">
+                    {editingId === exp.id ? (
+                      <td colSpan={5} className="py-2 px-2">
+                        <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
+                          <Input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="flex-1"
+                            placeholder="Title"
+                          />
+                          <select
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value as ExpenseCategory)}
+                            className="glass-input w-full sm:w-32 h-10 px-2"
+                          >
+                            <option value="food">Food</option>
+                            <option value="transport">Transport</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="other">Other</option>
+                          </select>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            className="w-full sm:w-28"
+                            placeholder="Amount"
+                          />
+                          <div className="flex gap-1">
+                            <Button onClick={saveEdit} className="h-10 px-3">
+                              Save
+                            </Button>
+                            <Button variant="outline" onClick={() => setEditingId(null)} className="h-10 px-3">
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    ) : (
+                      <>
+                        <td className="py-4 pl-2 text-sm text-slate-600 whitespace-nowrap">{formatDate(exp.date)}</td>
+                        <td className="py-4 font-medium text-slate-800">{exp.title}</td>
+                        <td className="py-4">
+                          <span className="text-xs px-2 py-1 rounded-full bg-white/60 border border-white/80 shadow-sm text-slate-700 capitalize">
+                            {exp.category}
+                          </span>
+                        </td>
+                        <td className="py-4 text-right font-bold text-slate-700">{formatCurrency(exp.amount)}</td>
+                        <td className="py-4 text-center">
+                          <div className="flex gap-1 justify-center">
+                            <button
+                              onClick={() => startEdit(exp)}
+                              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-white/50 rounded-lg transition-colors inline-block"
+                              title="Edit expense"
+                            >
+                              <BiEdit className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(exp.id)}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white/50 rounded-lg transition-colors inline-block"
+                              title="Delete expense"
+                            >
+                              <BiTrash className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
