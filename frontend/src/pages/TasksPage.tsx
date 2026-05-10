@@ -1,0 +1,144 @@
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { fetchTasks, addTask, editTask, removeTask } from '../store/slices/tasksSlice';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Card from '../components/ui/Card';
+import { BiTrash, BiCheckCircle, BiCircle } from 'react-icons/bi';
+
+const TasksPage = () => {
+  const dispatch = useAppDispatch();
+  const { items: tasks, isLoading } = useAppSelector((state) => state.tasks);
+  const [title, setTitle] = useState('');
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+    await dispatch(
+      addTask({
+        title,
+        description: '',
+        status: 'pending',
+        priority,
+        dueDate: new Date().toISOString(),
+      }),
+    );
+    setTitle('');
+  };
+
+  const toggleStatus = (id: string, currentStatus: string) => {
+    dispatch(editTask({ id, updates: { status: currentStatus === 'pending' ? 'completed' : 'pending' } }));
+  };
+
+  const handleDelete = (id: string) => {
+    dispatch(removeTask(id));
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold text-slate-800">Tasks</h2>
+
+      <Card>
+        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex-1 w-full">
+            <Input
+              label="New Task Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What needs to be done?"
+              required
+            />
+          </div>
+          <div className="w-full sm:w-32">
+            <label className="mb-1 block text-sm font-medium text-slate-700">Priority</label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as any)}
+              className="glass-input w-full h-10"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <Button type="submit" className="w-full sm:w-auto h-10">
+            Add Task
+          </Button>
+        </form>
+      </Card>
+
+      <Card>
+        {isLoading ? (
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 bg-slate-200 rounded-xl"></div>
+            ))}
+          </div>
+        ) : tasks.length === 0 ? (
+          <div className="text-center py-8 text-slate-500">
+            <BiCheckCircle className="mx-auto h-12 w-12 text-slate-300 mb-2" />
+            <p>No tasks yet. You're all caught up!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                  task.status === 'completed'
+                    ? 'bg-slate-50/50 border-slate-200 opacity-70'
+                    : 'bg-white/60 border-white/80 shadow-sm hover:shadow-md'
+                }`}
+              >
+                <button
+                  onClick={() => toggleStatus(task.id, task.status)}
+                  className="text-indigo-600 hover:text-indigo-800 flex-shrink-0"
+                >
+                  {task.status === 'completed' ? (
+                    <BiCheckCircle className="h-6 w-6" />
+                  ) : (
+                    <BiCircle className="h-6 w-6" />
+                  )}
+                </button>
+
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`font-medium truncate ${task.status === 'completed' ? 'line-through text-slate-500' : 'text-slate-800'}`}
+                  >
+                    {task.title}
+                  </p>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${
+                      task.priority === 'high'
+                        ? 'bg-rose-100 text-rose-700'
+                        : task.priority === 'medium'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-green-100 text-green-700'
+                    }`}
+                  >
+                    {task.priority}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex-shrink-0"
+                  title="Delete task"
+                >
+                  <BiTrash className="h-5 w-5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};
+
+export default TasksPage;
