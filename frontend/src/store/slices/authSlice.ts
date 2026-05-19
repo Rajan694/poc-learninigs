@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '../../types';
+import { getStoredToken, getStoredUser } from '../../services/authService';
 
 interface AuthState {
   user: User | null;
@@ -9,10 +10,13 @@ interface AuthState {
   error: string | null;
 }
 
+const storedUser = getStoredUser();
+const storedToken = getStoredToken();
+
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  user: storedUser,
+  token: storedToken,
+  isAuthenticated: Boolean(storedUser && storedToken),
   isLoading: false,
   error: null,
 };

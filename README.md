@@ -1,70 +1,118 @@
 # poc-learninigs — Monorepo
 
-A full-stack monorepo containing a React frontend and three NestJS backend microservices.
+A full-stack monorepo containing a React frontend and three NestJS + Prisma backend microservices.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
-```
+```text
 poc-learninigs/
-├── frontend/               # React + Vite + TypeScript app
+├── frontend/
 ├── backend/
-│   ├── mainService/        # NestJS — Main API service
-│   ├── sideServiceOne/     # NestJS — Side service #1
-│   └── sideServiceTwo/     # NestJS — Side service #2
-├── install-all.ps1         # Installs npm dependencies in all projects
-├── start-all.ps1           # Starts all projects in separate terminals
-└── README.md               # This file
+│   ├── userService/
+│   ├── toDoService/
+│   └── expenceManagerService/
+├── docker-compose.yml
+├── install-all.ps1
+├── install-all.sh
+├── start-all.ps1
+└── start-all.sh
 ```
 
 ---
 
-## 🌐 Service Ports
+## Service Ports
 
-| Service        | Port  | URL                        |
-|----------------|-------|----------------------------|
-| frontend       | 5173  | http://localhost:5173       |
-| mainService    | 3000  | http://localhost:3000       |
-| sideServiceOne | 3001  | http://localhost:3001       |
-| sideServiceTwo | 3002  | http://localhost:3002       |
+| Service | Port | URL |
+|---|---:|---|
+| frontend | 5173 | http://localhost:5173 |
+| userService (auth) | 3001 | http://localhost:3001 |
+| toDoService | 3002 | http://localhost:3002 |
+| expenceManagerService | 3003 | http://localhost:3003 |
 
 ---
 
-## ⚡ Quick Start
+## API Overview
 
-### 1. Install all dependencies
+### userService
+- `POST /auth/signup`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `GET /users/me`
+- `PATCH /users/me`
+- `DELETE /users/me`
+
+### toDoService
+- `GET /tasks`
+- `POST /tasks`
+- `PATCH /tasks/:id`
+- `DELETE /tasks/:id`
+
+### expenceManagerService
+- `GET /expenses`
+- `POST /expenses`
+- `PATCH /expenses/:id`
+- `DELETE /expenses/:id`
+
+---
+
+## Local Development
+
+Install dependencies:
+
+```bash
+./install-all.sh
+```
+
+or on Windows PowerShell:
+
 ```powershell
 .\install-all.ps1
 ```
 
-### 2. Start all services (each in its own terminal window)
+Start all services:
+
+```bash
+./start-all.sh
+```
+
+or on Windows PowerShell:
+
 ```powershell
 .\start-all.ps1
 ```
 
 ---
 
-## 🛠 Individual Commands
+## Docker (Windows + Ubuntu)
 
-Each project supports standard npm scripts:
+Start full backend stack:
 
 ```bash
-# Development (watch mode)
-npm run start:dev        # NestJS services
-npm run dev              # Frontend (Vite)
-
-# Production build
-npm run build
-
-# Lint
-npm run lint
+docker compose up --build -d
 ```
 
----
+View logs:
 
-## 🔧 Tech Stack
+```bash
+docker compose logs -f
+```
 
-- **Frontend**: React 19, Vite, TypeScript, TailwindCSS, React Router
-- **Backend**: NestJS 11, TypeScript, Express
-- **Tools**: ESLint, Prettier
+Stop stack:
+
+```bash
+docker compose down
+```
+
+Stop and remove volumes:
+
+```bash
+docker compose down -v
+```
+
+Notes:
+- Postgres and Redis are internal-only in Docker network (`app-network`) to avoid host port conflicts.
+- Service-to-service hostnames: `user-db`, `todo-db`, `expense-db`, `redis`.
+- Databases are isolated (`auth_db`, `todo_db`, `expense_db`) with separate volumes.

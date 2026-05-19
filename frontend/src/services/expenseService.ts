@@ -1,28 +1,56 @@
+import axios from 'axios';
 import type { Expense } from '../types';
-import { mockGetExpenses, mockCreateExpense, mockUpdateExpense, mockDeleteExpense } from '../demo/expenses.demo';
-// import axios from 'axios';
+import { getStoredToken } from './authService';
 
-// const API_URL = 'http://localhost:5000/api/expenses';
+const EXPENSE_API_URL = import.meta.env.VITE_API_EXPENCE_SERVICE ?? 'http://localhost:3003';
+
+const expenseClient = axios.create({
+  baseURL: EXPENSE_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+expenseClient.interceptors.request.use((config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 export const getExpenses = async (): Promise<Expense[]> => {
-  // const response = await axios.get(API_URL);
-  // return response.data;
-  return mockGetExpenses();
+  try {
+    const response = await expenseClient.get('/expenses');
+    return response.data as Expense[];
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to fetch expenses');
+  }
 };
 
 export const createExpense = async (expenseData: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense> => {
-  // const response = await axios.post(API_URL, expenseData);
-  // return response.data;
-  return mockCreateExpense(expenseData);
+  try {
+    const response = await expenseClient.post('/expenses', expenseData);
+    return response.data as Expense;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to create expense');
+  }
 };
 
 export const updateExpense = async (id: string, updates: Partial<Expense>): Promise<Expense> => {
-  // const response = await axios.put(`${API_URL}/${id}`, updates);
-  // return response.data;
-  return mockUpdateExpense(id, updates);
+  try {
+    const response = await expenseClient.patch(`/expenses/${id}`, updates);
+    return response.data as Expense;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to update expense');
+  }
 };
 
 export const deleteExpense = async (id: string): Promise<void> => {
-  // await axios.delete(`${API_URL}/${id}`);
-  return mockDeleteExpense(id);
+  try {
+    await expenseClient.delete(`/expenses/${id}`);
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to delete expense');
+  }
 };

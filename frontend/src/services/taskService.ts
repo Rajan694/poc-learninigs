@@ -1,28 +1,56 @@
+import axios from 'axios';
 import type { Task } from '../types';
-import { mockGetTasks, mockCreateTask, mockUpdateTask, mockDeleteTask } from '../demo/tasks.demo';
-// import axios from 'axios';
+import { getStoredToken } from './authService';
 
-// const API_URL = 'http://localhost:5000/api/tasks';
+const TODO_API_URL = import.meta.env.VITE_API_TODO_SERVICE ?? 'http://localhost:3002';
+
+const taskClient = axios.create({
+  baseURL: TODO_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+taskClient.interceptors.request.use((config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 export const getTasks = async (): Promise<Task[]> => {
-  // const response = await axios.get(API_URL);
-  // return response.data;
-  return mockGetTasks();
+  try {
+    const response = await taskClient.get('/tasks');
+    return response.data as Task[];
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to fetch tasks');
+  }
 };
 
 export const createTask = async (taskData: Omit<Task, 'id' | 'createdAt'>): Promise<Task> => {
-  // const response = await axios.post(API_URL, taskData);
-  // return response.data;
-  return mockCreateTask(taskData);
+  try {
+    const response = await taskClient.post('/tasks', taskData);
+    return response.data as Task;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to create task');
+  }
 };
 
 export const updateTask = async (id: string, updates: Partial<Task>): Promise<Task> => {
-  // const response = await axios.put(`${API_URL}/${id}`, updates);
-  // return response.data;
-  return mockUpdateTask(id, updates);
+  try {
+    const response = await taskClient.patch(`/tasks/${id}`, updates);
+    return response.data as Task;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to update task');
+  }
 };
 
 export const deleteTask = async (id: string): Promise<void> => {
-  // await axios.delete(`${API_URL}/${id}`);
-  return mockDeleteTask(id);
+  try {
+    await taskClient.delete(`/tasks/${id}`);
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message ?? 'Failed to delete task');
+  }
 };

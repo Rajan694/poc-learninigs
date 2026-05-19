@@ -8,22 +8,22 @@ $root = $PSScriptRoot
 # Format: @{ Name; Path; Command; Port }
 $services = @(
     @{
-        Name    = "mainService (NestJS)"
-        Path    = Join-Path $root "backend\mainService"
-        Command = "npm run start:dev"
-        Port    = 3000
-    },
-    @{
-        Name    = "sideServiceOne (NestJS)"
-        Path    = Join-Path $root "backend\sideServiceOne"
+        Name    = "userService (NestJS)"
+        Path    = Join-Path $root "backend\userService"
         Command = "npm run start:dev"
         Port    = 3001
     },
     @{
-        Name    = "sideServiceTwo (NestJS)"
-        Path    = Join-Path $root "backend\sideServiceTwo"
+        Name    = "toDoService (NestJS)"
+        Path    = Join-Path $root "backend\toDoService"
         Command = "npm run start:dev"
         Port    = 3002
+    },
+    @{
+        Name    = "expenceManagerService (NestJS)"
+        Path    = Join-Path $root "backend\expenceManagerService"
+        Command = "npm run start:dev"
+        Port    = 3003
     },
     @{
         Name    = "frontend (Vite)"
@@ -60,9 +60,9 @@ Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  All services launched!" -ForegroundColor Cyan
 Write-Host "----------------------------------------" -ForegroundColor DarkGray
-Write-Host "  Frontend       http://localhost:5173" -ForegroundColor Green
-Write-Host "  mainService    http://localhost:3000" -ForegroundColor Green
-Write-Host "  sideServiceOne http://localhost:3001" -ForegroundColor Green
-Write-Host "  sideServiceTwo http://localhost:3002" -ForegroundColor Green
+Write-Host "  Frontend              http://localhost:5173" -ForegroundColor Green
+Write-Host "  userService           http://localhost:3001" -ForegroundColor Green
+Write-Host "  toDoService           http://localhost:3002" -ForegroundColor Green
+Write-Host "  expenceManagerService http://localhost:3003" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
