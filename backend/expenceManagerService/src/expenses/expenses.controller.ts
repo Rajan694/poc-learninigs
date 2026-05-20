@@ -41,7 +41,11 @@ export class ExpensesController {
   }
 
   @Patch(':id')
-  updateExpense(@Req() request: Request, @Param('id') id: string, @Body() dto: UpdateExpenseDto) {
+  updateExpense(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() dto: UpdateExpenseDto,
+  ) {
     const userId = request.user?.id;
 
     if (!userId) {

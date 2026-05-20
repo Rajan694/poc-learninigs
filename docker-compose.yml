@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: user-service
     env_file:
-      - ./backend/userService/.env
+      - ./backend/userService/.env.example
     ports:
       - "3001:3001"
     depends_on:
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: todo-service
     env_file:
-      - ./backend/toDoService/.env
+      - ./backend/toDoService/.env.example
     ports:
       - "3002:3002"
     depends_on:
@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile
     container_name: expence-manager-service
     env_file:
-      - ./backend/expenceManagerService/.env
+      - ./backend/expenceManagerService/.env.example
     ports:
       - "3003:3003"
     depends_on:
