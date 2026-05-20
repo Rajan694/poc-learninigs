@@ -1,4 +1,10 @@
-import { IsEnum, IsISO8601, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateTaskDto {
   @IsString()

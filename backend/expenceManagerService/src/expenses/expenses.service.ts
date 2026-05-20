@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExpenseCategory, Prisma } from '@prisma/client';
 import { CacheService } from '../common/cache.service';
-import { PrismaService } from '../common/prisma.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ExpensesService {
@@ -16,7 +16,10 @@ export class ExpensesService {
 
   async getAll(userId: string) {
     const cacheKey = this.buildUserCacheKey(userId);
-    const cached = await this.cache.getJson<ReturnType<ExpensesService['toExpenseResponse']>[]>(cacheKey);
+    const cached =
+      await this.cache.getJson<
+        ReturnType<ExpensesService['toExpenseResponse']>[]
+      >(cacheKey);
 
     if (cached) {
       return cached;
@@ -61,7 +64,8 @@ export class ExpensesService {
 
     if (dto.title !== undefined) data.title = dto.title;
     if (dto.amount !== undefined) data.amount = dto.amount;
-    if (dto.category !== undefined) data.category = this.toPrismaCategory(dto.category);
+    if (dto.category !== undefined)
+      data.category = this.toPrismaCategory(dto.category);
     if (dto.date !== undefined) data.date = new Date(dto.date);
 
     const updatedExpense = await this.prisma.expense.update({

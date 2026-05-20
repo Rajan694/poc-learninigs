@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { RedisClientType, createClient } from 'redis';
 
 @Injectable()
@@ -15,7 +20,9 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.client.on('error', (error) => {
-      this.logger.warn(`Redis error: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn(
+        `Redis error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     });
   }
 
@@ -49,7 +56,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async setJson(key: string, value: unknown, ttlSeconds: number): Promise<void> {
+  async setJson(
+    key: string,
+    value: unknown,
+    ttlSeconds: number,
+  ): Promise<void> {
     if (!this.client.isOpen) {
       return;
     }

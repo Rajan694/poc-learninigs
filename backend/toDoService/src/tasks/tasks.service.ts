@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TaskPriority, TaskStatus } from '@prisma/client';
 import { CacheService } from '../common/cache.service';
-import { PrismaService } from '../common/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TasksService {
@@ -16,7 +16,10 @@ export class TasksService {
 
   async getAll(userId: string) {
     const cacheKey = this.buildUserCacheKey(userId);
-    const cachedTasks = await this.cache.getJson<ReturnType<TasksService['toTaskResponse']>[]>(cacheKey);
+    const cachedTasks =
+      await this.cache.getJson<ReturnType<TasksService['toTaskResponse']>[]>(
+        cacheKey,
+      );
 
     if (cachedTasks) {
       return cachedTasks;
@@ -63,7 +66,8 @@ export class TasksService {
     if (dto.title !== undefined) data.title = dto.title;
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.status !== undefined) data.status = this.toPrismaStatus(dto.status);
-    if (dto.priority !== undefined) data.priority = this.toPrismaPriority(dto.priority);
+    if (dto.priority !== undefined)
+      data.priority = this.toPrismaPriority(dto.priority);
     if (dto.dueDate !== undefined) data.dueDate = new Date(dto.dueDate);
 
     const updatedTask = await this.prisma.task.update({
@@ -110,12 +114,16 @@ export class TasksService {
     };
   }
 
-  private toPrismaStatus(status: 'pending' | 'completed' | undefined): TaskStatus {
+  private toPrismaStatus(
+    status: 'pending' | 'completed' | undefined,
+  ): TaskStatus {
     if (!status) return TaskStatus.PENDING;
     return status === 'completed' ? TaskStatus.COMPLETED : TaskStatus.PENDING;
   }
 
-  private toPrismaPriority(priority: 'low' | 'medium' | 'high' | undefined): TaskPriority {
+  private toPrismaPriority(
+    priority: 'low' | 'medium' | 'high' | undefined,
+  ): TaskPriority {
     if (!priority) return TaskPriority.MEDIUM;
 
     if (priority === 'low') return TaskPriority.LOW;

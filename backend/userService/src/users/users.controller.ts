@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Patch, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';

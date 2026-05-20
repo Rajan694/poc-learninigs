@@ -1,4 +1,11 @@
-import { IsEnum, IsISO8601, IsNumber, IsPositive, IsString, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsISO8601,
+  IsNumber,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateExpenseDto {
   @IsString()

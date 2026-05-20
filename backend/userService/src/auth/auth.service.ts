@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { compare, hash } from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
@@ -6,9 +11,9 @@ import { readFileSync } from 'node:fs';
 import { sign } from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import { isAbsolute, resolve } from 'node:path';
-import { PrismaService } from '../common/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type SafeUser = {
   id: string;
@@ -33,8 +38,12 @@ export class AuthService {
     }
   }
 
-  async signup(dto: SignupDto): Promise<{ user: SafeUser; token: string; refreshToken: string }> {
-    const existingUser = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
+  async signup(
+    dto: SignupDto,
+  ): Promise<{ user: SafeUser; token: string; refreshToken: string }> {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
     if (existingUser) {
       throw new ConflictException('Email is already registered');
     }
@@ -55,8 +64,12 @@ export class AuthService {
     return { user: this.toSafeUser(user), token, refreshToken };
   }
 
-  async login(dto: LoginDto): Promise<{ user: SafeUser; token: string; refreshToken: string }> {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
+  async login(
+    dto: LoginDto,
+  ): Promise<{ user: SafeUser; token: string; refreshToken: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -73,14 +86,24 @@ export class AuthService {
     return { user: this.toSafeUser(user), token, refreshToken };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<{ token: string; refreshToken: string }> {
-    const tokenRecord = await this.prisma.refreshToken.findUnique({ where: { token: refreshToken } });
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ token: string; refreshToken: string }> {
+    const tokenRecord = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
 
-    if (!tokenRecord || tokenRecord.revokedAt || tokenRecord.expiresAt.getTime() <= Date.now()) {
+    if (
+      !tokenRecord ||
+      tokenRecord.revokedAt ||
+      tokenRecord.expiresAt.getTime() <= Date.now()
+    ) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: tokenRecord.userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: tokenRecord.userId },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -108,7 +131,8 @@ export class AuthService {
   }
 
   private signAccessToken(user: User): string {
-    const expiresIn = (process.env.ACCESS_TOKEN_TTL ?? '15m') as SignOptions['expiresIn'];
+    const expiresIn = (process.env.ACCESS_TOKEN_TTL ??
+      '15m') as SignOptions['expiresIn'];
 
     return sign(
       {

@@ -1,4 +1,12 @@
-import { IsEnum, IsISO8601, IsNumber, IsOptional, IsPositive, IsString, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsISO8601,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateExpenseDto {
   @IsOptional()

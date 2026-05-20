@@ -1,4 +1,8 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { createPublicKey } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -23,7 +27,9 @@ export class AccessTokenMiddleware implements NestMiddleware {
 
     try {
       const privateKey = readFileSync(resolvedPath, 'utf8');
-      this.publicKey = createPublicKey(privateKey).export({ type: 'spki', format: 'pem' }).toString();
+      this.publicKey = createPublicKey(privateKey)
+        .export({ type: 'spki', format: 'pem' })
+        .toString();
     } catch {
       throw new Error(`Unable to load private key from path: ${resolvedPath}`);
     }
@@ -33,7 +39,9 @@ export class AccessTokenMiddleware implements NestMiddleware {
     const token = this.extractBearerToken(request);
 
     try {
-      const decoded = verify(token, this.publicKey, { algorithms: ['RS256'] }) as JwtPayload;
+      const decoded = verify(token, this.publicKey, {
+        algorithms: ['RS256'],
+      }) as JwtPayload;
 
       if (!decoded.userId || !decoded.userName || !decoded.email) {
         throw new UnauthorizedException('Invalid access token payload');

@@ -17,7 +17,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) response: Response) {
+  async signup(
+    @Body() dto: SignupDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const { user, token, refreshToken } = await this.authService.signup(dto);
     this.setRefreshCookie(response, refreshToken);
     return { user, token };
@@ -25,7 +28,10 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const { user, token, refreshToken } = await this.authService.login(dto);
     this.setRefreshCookie(response, refreshToken);
     return { user, token };
@@ -66,7 +72,8 @@ export class AuthController {
   }
 
   private setRefreshCookie(response: Response, refreshToken: string): void {
-    const maxAgeMs = Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 30) * 24 * 60 * 60 * 1000;
+    const maxAgeMs =
+      Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 30) * 24 * 60 * 60 * 1000;
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,

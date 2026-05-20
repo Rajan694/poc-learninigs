@@ -41,7 +41,11 @@ export class TasksController {
   }
 
   @Patch(':id')
-  updateTask(@Req() request: Request, @Param('id') id: string, @Body() dto: UpdateTaskDto) {
+  updateTask(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+  ) {
     const userId = request.user?.id;
 
     if (!userId) {

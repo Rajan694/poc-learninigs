@@ -1,4 +1,8 @@
-import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { createPublicKey, createVerify, KeyObject } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -29,13 +33,17 @@ export class Rs256AuthMiddleware implements NestMiddleware {
 
   constructor() {
     const keyPath = process.env.JWT_PUBLIC_KEY_PATH ?? 'public.pem';
-    const resolvedPath = isAbsolute(keyPath) ? keyPath : resolve(process.cwd(), keyPath);
+    const resolvedPath = isAbsolute(keyPath)
+      ? keyPath
+      : resolve(process.cwd(), keyPath);
 
     try {
       const publicKeyPem = readFileSync(resolvedPath, 'utf8');
       this.publicKey = createPublicKey(publicKeyPem);
     } catch {
-      throw new Error(`Failed to load JWT public key from path: ${resolvedPath}`);
+      throw new Error(
+        `Failed to load JWT public key from path: ${resolvedPath}`,
+      );
     }
   }
 

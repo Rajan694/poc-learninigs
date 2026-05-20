@@ -1,14 +1,19 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { Rs256AuthMiddleware } from './auth/rs256-auth.middleware';
 import { CacheService } from './common/cache.service';
-import { PrismaService } from './common/prisma.service';
 import { ExpensesController } from './expenses/expenses.controller';
 import { ExpensesService } from './expenses/expenses.service';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [],
+  imports: [PrismaModule],
   controllers: [ExpensesController],
-  providers: [PrismaService, CacheService, ExpensesService],
+  providers: [CacheService, ExpensesService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
