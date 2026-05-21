@@ -25,7 +25,7 @@ export const getExpenses = async (): Promise<Expense[]> => {
     const response = await expenseClient.get('/expenses');
     return response.data as Expense[];
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to fetch expenses');
+    throw new Error(error?.response?.data?.message ?? 'Failed to fetch expenses', { cause: error });
   }
 };
 
@@ -34,7 +34,7 @@ export const createExpense = async (expenseData: Omit<Expense, 'id' | 'createdAt
     const response = await expenseClient.post('/expenses', expenseData);
     return response.data as Expense;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to create expense');
+    throw new Error(error?.response?.data?.message ?? 'Failed to create expense', { cause: error });
   }
 };
 
@@ -43,7 +43,7 @@ export const updateExpense = async (id: string, updates: Partial<Expense>): Prom
     const response = await expenseClient.patch(`/expenses/${id}`, updates);
     return response.data as Expense;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to update expense');
+    throw new Error(error?.response?.data?.message ?? 'Failed to update expense', { cause: error });
   }
 };
 
@@ -51,6 +51,6 @@ export const deleteExpense = async (id: string): Promise<void> => {
   try {
     await expenseClient.delete(`/expenses/${id}`);
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to delete expense');
+    throw new Error(error?.response?.data?.message ?? 'Failed to delete expense', { cause: error });
   }
 };

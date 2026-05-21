@@ -25,7 +25,7 @@ export const getTasks = async (): Promise<Task[]> => {
     const response = await taskClient.get('/tasks');
     return response.data as Task[];
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to fetch tasks');
+    throw new Error(error?.response?.data?.message ?? 'Failed to fetch tasks', { cause: error });
   }
 };
 
@@ -34,7 +34,7 @@ export const createTask = async (taskData: Omit<Task, 'id' | 'createdAt'>): Prom
     const response = await taskClient.post('/tasks', taskData);
     return response.data as Task;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to create task');
+    throw new Error(error?.response?.data?.message ?? 'Failed to create task', { cause: error });
   }
 };
 
@@ -43,7 +43,7 @@ export const updateTask = async (id: string, updates: Partial<Task>): Promise<Ta
     const response = await taskClient.patch(`/tasks/${id}`, updates);
     return response.data as Task;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to update task');
+    throw new Error(error?.response?.data?.message ?? 'Failed to update task', { cause: error });
   }
 };
 
@@ -51,6 +51,6 @@ export const deleteTask = async (id: string): Promise<void> => {
   try {
     await taskClient.delete(`/tasks/${id}`);
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Failed to delete task');
+    throw new Error(error?.response?.data?.message ?? 'Failed to delete task', { cause: error });
   }
 };

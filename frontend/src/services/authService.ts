@@ -45,7 +45,7 @@ export const login = async (email: string, password: string): Promise<{ user: Us
     storeAuth(payload.user, payload.token);
     return payload;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Login failed');
+    throw new Error(error?.response?.data?.message ?? 'Login failed', { cause: error });
   }
 };
 
@@ -56,7 +56,7 @@ export const signup = async (name: string, email: string, password: string): Pro
     storeAuth(payload.user, payload.token);
     return payload;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message ?? 'Signup failed');
+    throw new Error(error?.response?.data?.message ?? 'Signup failed', { cause: error });
   }
 };
 
