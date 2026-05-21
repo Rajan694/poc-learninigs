@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { fetchExpenses, addExpense, removeExpense, editExpense } from '../store/slices/expensesSlice';
+import { useState } from 'react';
+import {
+  useGetExpensesQuery,
+  useCreateExpenseMutation,
+  useUpdateExpenseMutation,
+  useDeleteExpenseMutation,
+} from '../store/api/expensesApi';
 
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { BiTrash, BiWallet, BiEdit } from 'react-icons/bi';
@@ -10,8 +14,11 @@ import Button from '../components/ui/Button';
 import type { ExpenseCategory } from '../types';
 
 const ExpensesPage = () => {
-  const dispatch = useAppDispatch();
-  const { items: expenses, isLoading } = useAppSelector((state) => state.expenses);
+  const { data: expenses = [], isLoading, error: queryError } = useGetExpensesQuery();
+  const [createExpense] = useCreateExpenseMutation();
+  const [updateExpense] = useUpdateExpenseMutation();
+  const [deleteExpense] = useDeleteExpenseMutation();
+  const error = queryError ? (typeof queryError === 'string' ? queryError : 'An error occurred') : null;
 
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
@@ -29,43 +36,43 @@ const ExpensesPage = () => {
     setEditCategory(expense.category);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingId && editTitle.trim() && editAmount) {
-      dispatch(
-        editExpense({
+      try {
+        await updateExpense({
           id: editingId,
           updates: {
             title: editTitle,
             amount: parseFloat(editAmount),
             category: editCategory,
           },
-        })
-      );
-      setEditingId(null);
+        }).unwrap();
+        setEditingId(null);
+      } catch {
+        // Error state is managed by RTK Query.
+      }
     }
   };
-
-  useEffect(() => {
-    dispatch(fetchExpenses());
-  }, [dispatch]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !amount) return;
-    await dispatch(
-      addExpense({
+    try {
+      await createExpense({
         title,
         amount: parseFloat(amount),
         category,
         date: new Date().toISOString(),
-      }),
-    );
-    setTitle('');
-    setAmount('');
+      }).unwrap();
+      setTitle('');
+      setAmount('');
+    } catch {
+      // Error state is managed by RTK Query.
+    }
   };
 
   const handleDelete = (id: string) => {
-    dispatch(removeExpense(id));
+    deleteExpense(id);
   };
 
   const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -79,6 +86,10 @@ const ExpensesPage = () => {
           <span className="text-lg font-bold text-indigo-700">{formatCurrency(total)}</span>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+      )}
 
       <Card>
         <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">

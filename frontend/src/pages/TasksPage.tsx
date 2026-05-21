@@ -1,14 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { fetchTasks, addTask, editTask, removeTask } from '../store/slices/tasksSlice';
+import { useState } from 'react';
+import {
+  useGetTasksQuery,
+  useCreateTaskMutation,
+  useUpdateTaskMutation,
+  useDeleteTaskMutation,
+} from '../store/api/tasksApi';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
 import { BiTrash, BiCheckCircle, BiCircle, BiEdit } from 'react-icons/bi';
+import type { Task } from '../types';
 
 const TasksPage = () => {
-  const dispatch = useAppDispatch();
-  const { items: tasks, isLoading } = useAppSelector((state) => state.tasks);
+  const { data: tasks = [], isLoading, error: queryError } = useGetTasksQuery();
+  const [createTask] = useCreateTaskMutation();
+  const [updateTask] = useUpdateTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const error = queryError ? (typeof queryError === 'string' ? queryError : 'An error occurred') : null;
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
 
@@ -16,49 +24,56 @@ const TasksPage = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high'>('medium');
 
-  const startEdit = (task: any) => {
+  const startEdit = (task: Task) => {
     setEditingId(task.id);
     setEditTitle(task.title);
     setEditPriority(task.priority);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingId && editTitle.trim()) {
-      dispatch(editTask({ id: editingId, updates: { title: editTitle, priority: editPriority } }));
-      setEditingId(null);
+      try {
+        await updateTask({ id: editingId, updates: { title: editTitle, priority: editPriority } }).unwrap();
+        setEditingId(null);
+      } catch {
+        // Error state is managed by RTK Query.
+      }
     }
   };
-
-  useEffect(() => {
-    dispatch(fetchTasks());
-  }, [dispatch]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await dispatch(
-      addTask({
+
+    try {
+      await createTask({
         title,
         description: '',
         status: 'pending',
         priority,
         dueDate: new Date().toISOString(),
-      }),
-    );
-    setTitle('');
+      }).unwrap();
+      setTitle('');
+    } catch {
+      // Error state is managed by RTK Query.
+    }
   };
 
   const toggleStatus = (id: string, currentStatus: string) => {
-    dispatch(editTask({ id, updates: { status: currentStatus === 'pending' ? 'completed' : 'pending' } }));
+    updateTask({ id, updates: { status: currentStatus === 'pending' ? 'completed' : 'pending' } });
   };
 
   const handleDelete = (id: string) => {
-    dispatch(removeTask(id));
+    deleteTask(id);
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold text-slate-800">Tasks</h2>
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+      )}
 
       <Card>
         <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-4 items-end">
@@ -75,7 +90,7 @@ const TasksPage = () => {
             <label className="mb-1 block text-sm font-medium text-slate-700">Priority</label>
             <select
               value={priority}
-              onChange={(e) => setPriority(e.target.value as any)}
+              onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
               className="glass-input w-full h-10"
             >
               <option value="low">Low</option>
@@ -114,14 +129,10 @@ const TasksPage = () => {
               >
                 {editingId === task.id ? (
                   <div className="flex-1 flex flex-col sm:flex-row gap-3 w-full">
-                    <Input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1"
-                    />
+                    <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="flex-1" />
                     <select
                       value={editPriority}
-                      onChange={(e) => setEditPriority(e.target.value as any)}
+                      onChange={(e) => setEditPriority(e.target.value as 'low' | 'medium' | 'high')}
                       className="glass-input w-full sm:w-32 h-10 px-2"
                     >
                       <option value="low">Low</option>

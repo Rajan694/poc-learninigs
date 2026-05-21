@@ -1,21 +1,14 @@
 import { useEffect } from 'react';
 
 import { BiTask, BiWallet, BiTrendingUp } from 'react-icons/bi';
-import { useAppDispatch, useAppSelector } from '../hooks';
-import { fetchTasks } from '../store/slices/tasksSlice';
-import { fetchExpenses } from '../store/slices/expensesSlice';
+import { useGetTasksQuery } from '../store/api/tasksApi';
+import { useGetExpensesQuery } from '../store/api/expensesApi';
 import Card from '../components/ui/Card';
 import { formatCurrency } from '../utils/formatters';
 
  const DashboardPage = () => {
-  const dispatch = useAppDispatch();
-  const { items: tasks, isLoading: tasksLoading } = useAppSelector((state) => state.tasks);
-  const { items: expenses, isLoading: expensesLoading } = useAppSelector((state) => state.expenses);
-
-  useEffect(() => {
-    dispatch(fetchTasks());
-    dispatch(fetchExpenses());
-  }, [dispatch]);
+  const { data: tasks = [], isLoading: tasksLoading } = useGetTasksQuery();
+  const { data: expenses = [], isLoading: expensesLoading } = useGetExpensesQuery();
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === 'completed').length;

@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
-import tasksReducer from './slices/tasksSlice';
-import expensesReducer from './slices/expensesSlice';
+import { tasksApi } from './api/tasksApi';
+import { expensesApi } from './api/expensesApi';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    tasks: tasksReducer,
-    expenses: expensesReducer,
+    [tasksApi.reducerPath]: tasksApi.reducer,
+    [expensesApi.reducerPath]: expensesApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(tasksApi.middleware, expensesApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
