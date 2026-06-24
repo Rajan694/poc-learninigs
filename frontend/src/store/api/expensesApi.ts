@@ -18,10 +18,7 @@ export const expensesApi = createApi({
       },
       providesTags: (result) =>
         result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Expense' as const, id })),
-              { type: 'Expense', id: 'LIST' },
-            ]
+          ? [...result.map(({ id }) => ({ type: 'Expense' as const, id })), { type: 'Expense', id: 'LIST' }]
           : [{ type: 'Expense', id: 'LIST' }],
     }),
     createExpense: builder.mutation<Expense, Omit<Expense, 'id' | 'createdAt'>>({
@@ -44,7 +41,7 @@ export const expensesApi = createApi({
           return { error: error.message || 'Failed to update expense' };
         }
       },
-      invalidatesTags: (result, error, { id }) => [{ type: 'Expense', id }],
+      invalidatesTags: (_, __, { id }) => [{ type: 'Expense', id }],
     }),
     deleteExpense: builder.mutation<string, string>({
       queryFn: async (id) => {
@@ -55,14 +52,10 @@ export const expensesApi = createApi({
           return { error: error.message || 'Failed to delete expense' };
         }
       },
-      invalidatesTags: (result, error, id) => [{ type: 'Expense', id }],
+      invalidatesTags: (_, __, id) => [{ type: 'Expense', id }],
     }),
   }),
 });
 
-export const {
-  useGetExpensesQuery,
-  useCreateExpenseMutation,
-  useUpdateExpenseMutation,
-  useDeleteExpenseMutation,
-} = expensesApi;
+export const { useGetExpensesQuery, useCreateExpenseMutation, useUpdateExpenseMutation, useDeleteExpenseMutation } =
+  expensesApi;

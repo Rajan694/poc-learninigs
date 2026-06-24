@@ -18,10 +18,7 @@ export const tasksApi = createApi({
       },
       providesTags: (result) =>
         result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Task' as const, id })),
-              { type: 'Task', id: 'LIST' },
-            ]
+          ? [...result.map(({ id }) => ({ type: 'Task' as const, id })), { type: 'Task', id: 'LIST' }]
           : [{ type: 'Task', id: 'LIST' }],
     }),
     createTask: builder.mutation<Task, Omit<Task, 'id' | 'createdAt'>>({
@@ -44,7 +41,7 @@ export const tasksApi = createApi({
           return { error: error.message || 'Failed to update task' };
         }
       },
-      invalidatesTags: (result, error, { id }) => [{ type: 'Task', id }],
+      invalidatesTags: (_, __, { id }) => [{ type: 'Task', id }],
     }),
     deleteTask: builder.mutation<string, string>({
       queryFn: async (id) => {
@@ -55,14 +52,9 @@ export const tasksApi = createApi({
           return { error: error.message || 'Failed to delete task' };
         }
       },
-      invalidatesTags: (result, error, id) => [{ type: 'Task', id }],
+      invalidatesTags: (_, __, id) => [{ type: 'Task', id }],
     }),
   }),
 });
 
-export const {
-  useGetTasksQuery,
-  useCreateTaskMutation,
-  useUpdateTaskMutation,
-  useDeleteTaskMutation,
-} = tasksApi;
+export const { useGetTasksQuery, useCreateTaskMutation, useUpdateTaskMutation, useDeleteTaskMutation } = tasksApi;

@@ -19,6 +19,7 @@ COPY package*.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 COPY private.pem ./private.pem
 EXPOSE 3001
-CMD ["sh", "-c", "npx prisma db push && node dist/main"]
+CMD ["sh", "-c", "npx prisma db push && node dist/src/main"]
