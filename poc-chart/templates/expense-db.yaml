@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expense-db-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expense-db
+  template:
+    metadata:
+      labels:
+        app: expense-db
+    spec:
+      containers:
+        - name: expense-db
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: argusadmin
+            - name: POSTGRES_DB
+              value: expense_db
+          volumeMounts:
+            - name: expense-db-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: expense-db-data
+          persistentVolumeClaim:
+            claimName: expense-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: expense-db
+spec:
+  selector:
+    app: expense-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: expense-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
