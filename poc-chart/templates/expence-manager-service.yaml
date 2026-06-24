@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expence-manager-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: expence-manager-service
+  template:
+    metadata:
+      labels:
+        app: expence-manager-service
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z expense-db 5432; do echo waiting for expense-db; sleep 2; done;']
+        - name: wait-for-redis
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
+      containers:
+        - name: expence-manager-service
+          image: expensemanagerservice:poc
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3003
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://postgres:argusadmin@expense-db:5432/expense_db?schema=public"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: SERVICE_NAME
+              value: "expenceManagerService"
+            - name: PORT
+              value: "3003"
+            - name: NODE_ENV
+              value: "production"
+            - name: FRONTEND_URL
+              value: "http://localhost:5173"
+            - name: JWT_PUBLIC_KEY_PATH
+              value: "public.pem"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: expence-manager-service
+spec:
+  selector:
+    app: expence-manager-service
+  ports:
+    - port: 3003
+      targetPort: 3003
